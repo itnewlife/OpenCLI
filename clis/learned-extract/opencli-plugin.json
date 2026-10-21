@@ -1,0 +1,6 @@
+{
+  "name": "learned-extract",
+  "version": "0.1.2",
+  "opencli": ">=2.0.2",
+  "description": "Validated, reusable read-only extraction rules with field evidence"
+}

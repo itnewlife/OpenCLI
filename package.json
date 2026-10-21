@@ -28,7 +28,8 @@
     "./download/article-download": "./dist/src/download/article-download.js",
     "./download/media-download": "./dist/src/download/media-download.js",
     "./download/progress": "./dist/src/download/progress.js",
-    "./pipeline": "./dist/src/pipeline/index.js"
+    "./pipeline": "./dist/src/pipeline/index.js",
+    "./extraction": "./dist/src/extraction/index.js"
   },
   "files": [
     "dist/src/",
@@ -85,14 +86,15 @@
     "cli-table3": "^0.6.5",
     "commander": "^14.0.3",
     "js-yaml": "^4.3.2",
+    "linkedom": "^0.18.14",
     "turndown": "^7.2.2",
     "turndown-plugin-gfm": "^1.0.2",
     "undici": "7.29.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/jsdom": "^27.0.0",
     "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^27.0.0",
     "@types/node": "^25.5.2",
     "@types/turndown": "^5.0.6",
     "@types/ws": "^8.5.13",

@@ -56,6 +56,17 @@ vi.mock('node:child_process', async () => {
 
 import { createProgram, findPackageRoot, normalizeVerifyRows, resolveBrowserVerifyInvocation, selectFreshByTimestamp } from './cli.js';
 
+let isolatedProfileDir: string;
+beforeEach(() => {
+  isolatedProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'opencli-cli-profiles-'));
+  vi.stubEnv('OPENCLI_CONFIG_DIR', isolatedProfileDir);
+  vi.stubEnv('OPENCLI_PROFILE', '');
+});
+afterEach(() => {
+  vi.unstubAllEnvs();
+  fs.rmSync(isolatedProfileDir, { recursive: true, force: true });
+});
+
 describe('createProgram root help descriptions', () => {
   function descriptionFor(program: ReturnType<typeof createProgram>, name: string): string | undefined {
     return program.commands.find(cmd => cmd.name() === name)?.description();

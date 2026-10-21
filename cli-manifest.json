@@ -1398,7 +1398,7 @@
   {
     "site": "amazon",
     "name": "discussion",
-    "description": "Amazon review summary and sample customer discussion from product review pages",
+    "description": "Amazon review summary and observed customer review samples with variant and completeness metadata",
     "access": "read",
     "domain": "amazon.com",
     "strategy": "cookie",
@@ -1412,6 +1412,17 @@
         "help": "ASIN or product URL, for example B0FJS72893"
       },
       {
+        "name": "source",
+        "type": "str",
+        "default": "reviews",
+        "required": false,
+        "help": "Start at reviews (default) or read the product page directly",
+        "choices": [
+          "reviews",
+          "product"
+        ]
+      },
+      {
         "name": "limit",
         "type": "int",
         "default": 10,
@@ -1422,7 +1433,10 @@
     "columns": [
       "asin",
       "average_rating_value",
-      "total_review_count"
+      "total_review_count",
+      "usable_review_sample_count",
+      "review_samples_status",
+      "status"
     ],
     "type": "js",
     "modulePath": "amazon/discussion.js",
@@ -20258,6 +20272,247 @@
     "sourceFile": "kimi/auth.js",
     "navigateBefore": false,
     "siteSession": "persistent"
+  },
+  {
+    "site": "learned-extract",
+    "name": "amazon-reviews",
+    "description": "Read rendered Amazon review samples with per-review identity, variants and field status",
+    "access": "read",
+    "domain": "amazon.com",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "input",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Amazon ASIN or product/review URL"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": 10,
+        "required": false,
+        "help": "Maximum rendered review samples; no pagination"
+      },
+      {
+        "name": "source",
+        "type": "str",
+        "default": "reviews",
+        "required": false,
+        "help": "Initial page to read: review list or product-page review samples",
+        "choices": [
+          "reviews",
+          "product"
+        ]
+      }
+    ],
+    "columns": [
+      "asin",
+      "status",
+      "usable_review_sample_count",
+      "review_samples_status"
+    ],
+    "defaultFormat": "json",
+    "type": "js",
+    "modulePath": "learned-extract/amazon-reviews.js",
+    "sourceFile": "learned-extract/amazon-reviews.js",
+    "navigateBefore": false
+  },
+  {
+    "site": "learned-extract",
+    "name": "capture",
+    "description": "Capture a bounded page snapshot for reusable read-only extraction",
+    "access": "read",
+    "strategy": "cookie",
+    "browser": true,
+    "args": [
+      {
+        "name": "url",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Authorized page URL to capture"
+      },
+      {
+        "name": "output",
+        "type": "str",
+        "required": true,
+        "help": "New snapshot JSON file (never overwrites)"
+      },
+      {
+        "name": "wait",
+        "type": "int",
+        "default": 1,
+        "required": false,
+        "help": "Page settling time in seconds (0-30)"
+      }
+    ],
+    "defaultFormat": "json",
+    "type": "js",
+    "modulePath": "learned-extract/capture.js",
+    "sourceFile": "learned-extract/capture.js",
+    "navigateBefore": false
+  },
+  {
+    "site": "learned-extract",
+    "name": "learn",
+    "description": "Validate proposed extraction rules against checked samples and cache a version",
+    "access": "read",
+    "strategy": "local",
+    "browser": false,
+    "args": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Name of the learned rule"
+      },
+      {
+        "name": "schema",
+        "type": "str",
+        "required": true,
+        "help": "Path to a flat scalar JSON Schema"
+      },
+      {
+        "name": "context",
+        "type": "str",
+        "required": true,
+        "help": "Non-secret account/view/locale identifier for cache isolation"
+      },
+      {
+        "name": "snapshot",
+        "type": "str",
+        "required": true,
+        "help": "Snapshot JSON file produced by learned-extract capture"
+      },
+      {
+        "name": "cache-dir",
+        "type": "str",
+        "required": false,
+        "help": "Rule cache directory (default ~/.opencli/extraction-rules)"
+      },
+      {
+        "name": "samples",
+        "type": "str",
+        "required": false,
+        "help": "Validation manifest with 2-8 independently checked snapshots"
+      },
+      {
+        "name": "rule",
+        "type": "str",
+        "required": false,
+        "help": "Proposed rule JSON file; no model request is made"
+      },
+      {
+        "name": "endpoint",
+        "type": "str",
+        "required": false,
+        "help": "Explicit full /chat/completions endpoint; sends sample HTML to that endpoint"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "required": false,
+        "help": "Exact model name at the configured endpoint"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 60,
+        "required": false,
+        "help": "Model request timeout in seconds"
+      }
+    ],
+    "defaultFormat": "json",
+    "type": "js",
+    "modulePath": "learned-extract/learn.js",
+    "sourceFile": "learned-extract/learn.js"
+  },
+  {
+    "site": "learned-extract",
+    "name": "run",
+    "description": "Apply a learned rule to a fresh snapshot with field evidence and validation",
+    "access": "read",
+    "strategy": "local",
+    "browser": false,
+    "args": [
+      {
+        "name": "name",
+        "type": "str",
+        "required": true,
+        "positional": true,
+        "help": "Name of the learned rule"
+      },
+      {
+        "name": "schema",
+        "type": "str",
+        "required": true,
+        "help": "Path to a flat scalar JSON Schema"
+      },
+      {
+        "name": "context",
+        "type": "str",
+        "required": true,
+        "help": "Non-secret account/view/locale identifier for cache isolation"
+      },
+      {
+        "name": "snapshot",
+        "type": "str",
+        "required": true,
+        "help": "Snapshot JSON file produced by learned-extract capture"
+      },
+      {
+        "name": "cache-dir",
+        "type": "str",
+        "required": false,
+        "help": "Rule cache directory (default ~/.opencli/extraction-rules)"
+      },
+      {
+        "name": "repair",
+        "type": "boolean",
+        "default": false,
+        "required": false,
+        "help": "Attempt one repair using explicitly provided checked samples and proposal/provider"
+      },
+      {
+        "name": "samples",
+        "type": "str",
+        "required": false,
+        "help": "Validation manifest with 2-8 independently checked snapshots"
+      },
+      {
+        "name": "rule",
+        "type": "str",
+        "required": false,
+        "help": "Proposed rule JSON file; no model request is made"
+      },
+      {
+        "name": "endpoint",
+        "type": "str",
+        "required": false,
+        "help": "Explicit full /chat/completions endpoint; sends sample HTML to that endpoint"
+      },
+      {
+        "name": "model",
+        "type": "str",
+        "required": false,
+        "help": "Exact model name at the configured endpoint"
+      },
+      {
+        "name": "timeout",
+        "type": "int",
+        "default": 60,
+        "required": false,
+        "help": "Model request timeout in seconds"
+      }
+    ],
+    "defaultFormat": "json",
+    "type": "js",
+    "modulePath": "learned-extract/run.js",
+    "sourceFile": "learned-extract/run.js"
   },
   {
     "site": "lesswrong",
